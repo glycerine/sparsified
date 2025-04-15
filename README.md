@@ -15,7 +15,27 @@ how darwin copies sparse files... see copyfile_data_sparse() here https://github
 
 https://github.com/frostschutz/go-fibmap
 
+extents: links to more info
+-------
 
+https://en.wikipedia.org/wiki/Extent_(file_systems)
+
+https://www.eecs.harvard.edu/~cs161/notes/intro-file-systems.pdf
+
+https://unix.stackexchange.com/questions/223310/what-do-extents-feature-do-in-ext4-filesystem-in-linux
+
+https://stackoverflow.com/questions/3942223/what-is-extentin-fs
+
+https://www.eg.bucknell.edu/~cs315/2013-fall/sec02/notes/25-File-System-Implementation-P3-print.pdf
+
+https://blogs.oracle.com/linux/post/extents-and-extent-allocation-in-ext4
+
+APFS (Apple File System, on all iPhones and darwin >= High Sierra, replaced HFS+)
+--------
+
+https://umatechnology.org/understanding-apfs-the-new-file-system-from-apple/
+
+https://eclecticlight.co/2024/03/20/apfs-files-and-clones/
 
 a bunch of random notes on sparse file handling
 -----------------------------------------------
