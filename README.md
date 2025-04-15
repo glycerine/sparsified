@@ -213,7 +213,8 @@ https://github.com/longhorn/sparse-tools/
 great example
 https://github.com/svenwiltink/sparsecat
 
-## make a 1MB sparse file
+to make a 1MB sparse file
+~~~
 $ truncate -s1M image.raw
 
 $ dd if=/dev/urandom bs=1K count=1 conv=notrunc seek=30 of=image.raw
@@ -225,7 +226,10 @@ $ ls -lsk image.raw
 $ 
 ls -lsk image.raw 
 1024 -rw-------  1 jaten  staff  1048576 Apr 14 22:36 image.raw
-jaten@jbook ~/yogadb (master) $
+$
+~~~
+
+more notes
 -------
 
 https://pkg.go.dev/github.com/frostschutz/go-fibmap
