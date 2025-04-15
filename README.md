@@ -42,19 +42,25 @@ improvements from ext3 to ext4.
 
 However, if you want to verify that your ext4 filesystem
 has extent support enabled:
+
 ~~~
 tune2fs -l /dev/your_device | grep extent
 ~~~
+
 example output, shows extent:
+
 ~~~
 Filesystem features:      has_journal ext_attr resize_inode dir_index filetype needs_recovery extent 64bit flex_bg sparse_super large_file huge_file dir_nlink extra_isize metadata_csum
 ~~~
+
 You should see "extent" in the features list.
 
 Check if a specific file is using extents:
+
 ~~~
 $ filefrag -v your_file
 ~~~
+
 If it shows "ext" in the output, it's using extents.
 
 example output:
@@ -67,10 +73,13 @@ File size of out.db is 1 (1 block of 4096 bytes)
 out.db: 1 extent found
 $
 ~~~
+
 For an existing filesystem, extents can be enabled with:
+
 ~~~
 $ tune2fs -O extent /dev/your_device
 ~~~
+
 Important notes:
 
 * All modern ext4 filesystems enable extents by default
