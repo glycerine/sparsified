@@ -30,12 +30,100 @@ https://www.eg.bucknell.edu/~cs315/2013-fall/sec02/notes/25-File-System-Implemen
 
 https://blogs.oracle.com/linux/post/extents-and-extent-allocation-in-ext4
 
+~~~
+// How do I make an extent-based file on ext4?
+
+Answer from an LLM:
+
+On ext4, files are automatically extent-based by default
+since ext4 was introduced - you don't need to do anything
+special. The extent feature was one of the major
+improvements from ext3 to ext4.
+
+However, if you want to verify that your ext4 filesystem
+has extent support enabled:
+~~~
+tune2fs -l /dev/your_device | grep extent
+~~~
+example output, shows extent:
+~~~
+Filesystem features:      has_journal ext_attr resize_inode dir_index filetype needs_recovery extent 64bit flex_bg sparse_super large_file huge_file dir_nlink extra_isize metadata_csum
+~~~
+You should see "extent" in the features list.
+
+Check if a specific file is using extents:
+~~~
+$ filefrag -v your_file
+~~~
+If it shows "ext" in the output, it's using extents.
+
+example output:
+~~~
+$ filefrag -v out.db
+Filesystem type is: ef53
+File size of out.db is 1 (1 block of 4096 bytes)
+ ext:     logical_offset:        physical_offset: length:   expected: flags:
+   0:        0..       0:   80912788..  80912788:      1:             last,eof
+out.db: 1 extent found
+$
+~~~
+For an existing filesystem, extents can be enabled with:
+~~~
+$ tune2fs -O extent /dev/your_device
+~~~
+Important notes:
+
+* All modern ext4 filesystems enable extents by default
+
+* Files created on ext4 automatically use extents unless:
+  + The filesystem was upgraded from ext3 without enabling extents
+  + The file was created before extents were enabled
+  + The filesystem was mounted with noextent option (very rare)
+
+So for your fallocate with FALLOC_FL_COLLAPSE_RANGE operation,
+any newly created file on a modern ext4 filesystem will support it by default.
+
+
 APFS (Apple File System, on all iPhones and darwin >= High Sierra, replaced HFS+)
 --------
 
 https://umatechnology.org/understanding-apfs-the-new-file-system-from-apple/
 
 https://eclecticlight.co/2024/03/20/apfs-files-and-clones/
+
+XFS
+--------
+
+XFS will pre-allocate extent space when it sees append activity...
+
+https://serverfault.com/questions/406069/why-are-my-xfs-filesystems-suddenly-consuming-more-space-and-full-of-sparse-file
+
+"I traced this issue back to a discussion about a commit to the XFS source tree from December 2010. The patch was introduced in Kernel 2.6.38 (and obviously, later backported into some popular Linux distribution kernels).
+
+"The observed fluctuations in disk usage are a result of a new feature; XFS Dynamic Speculative EOF Preallocation.
+
+"This is a move to reduce file fragmentation during streaming writes by speculatively allocating space as file sizes increase. The amount of space preallocated per file is dynamic and is primarily a function of the free space available on the filesystem (to preclude running out of space entirely).
+
+It follows this schedule:
+~~~
+freespace       max prealloc size
+  >5%             full extent (8GB)
+  4-5%             2GB (8GB >> 2)
+  3-4%             1GB (8GB >> 3)
+  2-3%           512MB (8GB >> 4)
+  1-2%           256MB (8GB >> 5)
+  <1%            128MB (8GB >> 6)
+~~~
+
+"Performance on XFS volumes with this feature is drastically improved. I'm seeing consistent < 1% fragmentation on volumes that previously displayed up to 50% fragmentation. Write performance is up globally!
+
+"Oh, wonderful find. This was using 750GB on 35GB of files. After xfs_fsr it's back down to about 35GB. I'll have to keep an eye on that
+
+https://web.archive.org/web/20171010174337/http://oss.sgi.com/archives/xfs/2010-12/msg00328.html
+
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=055388a3188f56676c21e92962fc366ac8b5cb72
+
+
 
 a bunch of random notes on sparse file handling
 -----------------------------------------------
