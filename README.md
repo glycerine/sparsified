@@ -15,8 +15,71 @@ how darwin copies sparse files... see copyfile_data_sparse() here https://github
 
 https://github.com/frostschutz/go-fibmap
 
+
+
 a bunch of random notes on sparse file handling
 -----------------------------------------------
+
+https://stackoverflow.com/questions/43035271/sparse-files-are-huge-with-io-copy
+
+Q: can I piggy back on my zero RLE compression to write that back as a sparse file thing?
+
+https://github.com/golang/go/issues/13548
+
+good discussion of sparse files for go archive/tar
+
+Change https://golang.org/cl/56771 mentions this issue: archive/tar: refactor Reader support for sparse files
+
+Change https://golang.org/cl/57212 mentions this issue: archive/tar: implement Writer support for sparse files
+
+** [ ] add sparse file hole detection to rsync / bytes.Zeros RLE detection to
+make it more efficient.
+
+if the OS/filesystem gives SEEK_HOLE and SEEK_DATA support
+
+"In Windows, you can use os.File.Fd() to access the underlying HANDLE, with which you can call DeviceIOControl with control code FSCTL_QUERY_ALLOCATED_RANGES to access the hole list (see this example).
+https://www.codeproject.com/Articles/53000/Managing-Sparse-Files-on-Windows
+
+"Currently released versions of macOS (or rather HFS+) doesn't support sparse files. The new APFS filesystem supports them, but the documentation is rather sparse at the moment, given that macOS with APFS is still in beta (this is the only APFS-related API list I found, and it touches several features but not sparse files).
+
+"I did some quick test on both beta e non beta version of macOS, and it looks like APFS allows to create sparse file just like Linux, by simply seeking; for instance, I did dd if=/dev/zero of=file.img bs=1 count=0 seek=512000000 to create a file of apparent size of 512 MB that occupies zero bytes (verified with du file.img). Also, the man page of lseek includes SEEK_HOLE and SEEK_DATA, though I haven't directly tested them, but they're described as working exactly as they work in Linux and Solaris. So it looks like that macOS support will be achieved with the same code that will be used on Linux.
+
+"You seem to want to avoid OS-specific code in Reader / Writer. I'm afraid that's not fully possible because on Windows you need to create holes through a specific API; seeking by itself does not create holes, just zeros. So Reader.WriteTo will have to call OS-specific code, when Windows support is added.
+
+Change https://golang.org/cl/60871 mentions this issue: archive/tar: add Header.DetectSparseHoles
+
+Change https://golang.org/cl/60872 mentions this issue: archive/tar: add Reader.WriteTo and Writer.ReadFrom
+
+Came across this issue looking for sparse-file support in Golang. API looks good to me and certainly fits my usecase :). Is there no sysSparsePunch needed for unix?
+
+On Unix OSes that support sparse files, seeking past EOF and writing or resizing the file to be larger automatically produces a sparse file.
+
+Change https://golang.org/cl/78030 mentions this issue: archive/tar: partially revert sparse file support
+
+good pointers in https://github.com/lxc/incus/issues/662
+
+archive/tar: re-add sparse file support golang/go#22735
+https://github.com/golang/go/issues/22735
+
+archive/tar: add support for writing tar containing sparse files golang/go#13548
+https://github.com/golang/go/issues/13548
+
+lxc publish expands sparse files canonical/lxd#4239
+https://github.com/canonical/lxd/issues/4239
+
+rsc design discussion
+https://github.com/golang/go/issues/22735
+
+AFAICT, on Windows, you can't create sparse zero areas by seeking, as the MSDN documentation clearly states:
+
+https://msdn.microsoft.com/it-it/library/windows/desktop/aa365566%28v=vs.85%29.aspx
+https://blogs.msdn.microsoft.com/oldnewthing/20110922-00/?p=9573/
+
+The blog post hints that you can set the file sparse and create immediately a full-size sparse span, so that later writers+seeks would basically fragment it but leaving sparse areas under the seeks. I have no clue if there is an impact on performance with this approach, and also it doesn't really belong to a os.File.SetSparse API I would say.
+
+Note that this was discussed at length in #13548, where also your proposal of lazy header writing was analyzed and discarded.
+
+------------
 
 https://github.com/seaweedfs/seaweedfs/blob/1d89d20798f0b7289882a50dd164a449bba408b4/weed/storage/backend/volume_create_linux.go#L19
 

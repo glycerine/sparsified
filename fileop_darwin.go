@@ -1,6 +1,6 @@
 //go:build darwin
 
-package main
+package sparsified
 
 /*
 #include <sys/fcntl.h> // for fpunchhole_t
