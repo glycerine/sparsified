@@ -30,8 +30,8 @@ https://www.eg.bucknell.edu/~cs315/2013-fall/sec02/notes/25-File-System-Implemen
 
 https://blogs.oracle.com/linux/post/extents-and-extent-allocation-in-ext4
 
-~~~
-// How do I make an extent-based file on ext4?
+
+Q: How do I make an extent-based file on ext4?
 
 Answer from an LLM:
 
